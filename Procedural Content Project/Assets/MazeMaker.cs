@@ -6,9 +6,10 @@ public class MazeMaker : MonoBehaviour
 {
     public int mazeWidth;
     public int mazeHeight;
-    public Location mazeStart = new Location(5,0);
+    public Location mazeStart = new Location(0,0);
 
     GridLevel levelOne;
+    GameObject wallPrefab;
 
     // Start is called before the first frame update
     void Start()
@@ -31,12 +32,34 @@ public class MazeMaker : MonoBehaviour
         //        Debug.Log("Cell " + i + "," + j + ": " + levelOne.cells[i, j]);
         //    }
         //}
+
+        wallPrefab = Resources.Load<GameObject>("Wall");
+        BuildMaze();
     }
 
     // Update is called once per frame
     void Update()
     {
-        // draw the maze
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            // destroy old walls
+            GameObject[] walls = GameObject.FindGameObjectsWithTag("Wall");
+            Debug.Log("Found " + walls.Length + " walls.");
+            foreach(GameObject wall in walls)
+            {
+                Debug.Log("destroying");
+                Destroy(wall);
+            }
+
+            // generate a new maze
+            mazeWidth = (int)Random.Range(5f, 10f);
+            mazeHeight = (int)Random.Range(10f, 20f);
+            levelOne = new GridLevel(mazeWidth, mazeHeight);
+            generateMaze(levelOne, mazeStart);
+            BuildMaze();
+        }
+
+        // debug draw the maze
         for (int x = 0; x < mazeWidth; x++)
         {
             for (int y = 0; y < mazeHeight; y++)
@@ -70,6 +93,44 @@ public class MazeMaker : MonoBehaviour
                         Vector3 neighborPos = new Vector3(x - lineLength, 0, y);
                         Debug.DrawLine(cellPos, neighborPos, Color.cyan);
                     }
+                }
+            }
+        }
+    }
+
+    void BuildMaze()
+    {
+        for (int x = 0; x < mazeWidth; x++)
+        {
+            for (int y = 0; y < mazeHeight; y++)
+            {
+                Connections currentCell = levelOne.cells[x, y];
+                if (levelOne.cells[x, y].inMaze)
+                {
+                    Vector3 cellPos = new Vector3(x, 0, y);
+                    float lineLength = 1f;
+                    if (!currentCell.directions[0])
+                    {
+                        Vector3 wallPos = new Vector3(x + lineLength / 2, 0, y);
+                        GameObject wall = Instantiate(wallPrefab, wallPos, Quaternion.identity) as GameObject;
+                    }
+                    if (!currentCell.directions[1])
+                    {
+                        Vector3 wallPos = new Vector3(x, 0, y + lineLength / 2);
+                        GameObject wall = Instantiate(wallPrefab, wallPos, Quaternion.Euler(0f, 90f, 0f)) as GameObject;
+                    }
+                    //if (currentCell.directions[2])
+                    //{
+                    //    // negative y
+                    //    Vector3 neighborPos = new Vector3(x, 0, y - lineLength);
+                    //    Debug.DrawLine(cellPos, neighborPos, Color.cyan);
+                    //}
+                    //if (currentCell.directions[3])
+                    //{
+                    //    // negative x
+                    //    Vector3 neighborPos = new Vector3(x - lineLength, 0, y);
+                    //    Debug.DrawLine(cellPos, neighborPos, Color.cyan);
+                    //}
                 }
             }
         }
