@@ -6,7 +6,7 @@ public class GridLevel : Level
 {
     // dx, dy, and index into the Connections.directions array
     // need to store the index into Connections.directions because we're going to shuffle NEIGHBORS
-    Vector3[] NEIGHBORS = new Vector3[4] 
+    protected Vector3[] NEIGHBORS = new Vector3[4] 
     {
         new Vector3(1, 0, 0),
         new Vector3(0, 1, 1),
@@ -14,8 +14,8 @@ public class GridLevel : Level
         new Vector3(-1, 0, 3)
     };
 
-    int mWidth;
-    int mHeight;
+    protected int mWidth;
+    protected int mHeight;
     public Connections[,] cells; // = new Connections[,];
 
     // constructor

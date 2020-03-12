@@ -8,15 +8,17 @@ public class MazeMaker : MonoBehaviour
     public int mazeHeight;
     public Location mazeStart = new Location(0,0);
 
-    GridLevel levelOne;
+    //GridLevel levelOne;
+    GridLevelWithRooms levelOne;
     GameObject wallPrefab;
 
     // Start is called before the first frame update
     void Start()
     {
-        //Debug.Log("Generating maze with Width = " + mazeWidth + " and Height = " + mazeHeight);
-        levelOne = new GridLevel(mazeWidth, mazeHeight);
-        generateMaze(levelOne, mazeStart);
+        wallPrefab = Resources.Load<GameObject>("Wall");
+
+        //levelOne = new GridLevel(mazeWidth, mazeHeight);
+        //generateMaze(levelOne, mazeStart);
 
         // levelOne.cells is now a two-dimensional array representing each cell in the grid
         // each cell know if it's in the maze and has an array of booleans indicating whether or not
@@ -33,8 +35,14 @@ public class MazeMaker : MonoBehaviour
         //    }
         //}
 
-        wallPrefab = Resources.Load<GameObject>("Wall");
-        BuildMaze();
+        // add an exit (per Millington bottom of page 705)
+        //int exitX = mazeWidth - 1 - mazeStart.x;
+        //int exitY = mazeHeight - 1 - mazeStart.y;
+        //Location exit = new Location(exitX, exitY);
+        //MakeDoorway(exit);
+
+        //MakeDoorway(mazeStart);
+        //BuildMaze();
     }
 
     // Update is called once per frame
@@ -44,54 +52,62 @@ public class MazeMaker : MonoBehaviour
         {
             // destroy old walls
             GameObject[] walls = GameObject.FindGameObjectsWithTag("Wall");
-            Debug.Log("Found " + walls.Length + " walls.");
             foreach(GameObject wall in walls)
             {
-                Debug.Log("destroying");
                 Destroy(wall);
             }
 
             // generate a new maze
-            mazeWidth = (int)Random.Range(5f, 10f);
-            mazeHeight = (int)Random.Range(10f, 20f);
-            levelOne = new GridLevel(mazeWidth, mazeHeight);
+            mazeWidth = (int)Random.Range(5f, 20f);
+            mazeHeight = (int)Random.Range(5f, 20f);
+            mazeStart = new Location((int)Random.Range(0f, mazeWidth - 1), 0);
+            int exitX = mazeWidth - 1 - mazeStart.x;
+            int exitY = mazeHeight - 1 - mazeStart.y;
+            Location exit = new Location(exitX, exitY);
+            //levelOne = new GridLevel(mazeWidth, mazeHeight);
+            levelOne = new GridLevelWithRooms(mazeWidth, mazeHeight);
             generateMaze(levelOne, mazeStart);
+            MakeDoorway(mazeStart);
+            MakeDoorway(exit);
             BuildMaze();
         }
 
         // debug draw the maze
-        for (int x = 0; x < mazeWidth; x++)
+        if (levelOne != null)
         {
-            for (int y = 0; y < mazeHeight; y++)
+            for (int x = 0; x < mazeWidth; x++)
             {
-                Connections currentCell = levelOne.cells[x, y];
-                if (levelOne.cells[x, y].inMaze)
-                { 
-                    Vector3 cellPos = new Vector3(x, 0, y);
-                    float lineLength = 1f;
-                    if (currentCell.directions[0])
+                for (int y = 0; y < mazeHeight; y++)
+                {
+                    Connections currentCell = levelOne.cells[x, y];
+                    if (currentCell.inMaze)
                     {
-                        // positive x
-                        Vector3 neighborPos = new Vector3(x + lineLength, 0, y);
-                        Debug.DrawLine(cellPos, neighborPos, Color.cyan);
-                    }
-                    if (currentCell.directions[1])
-                    {
-                        // positive y
-                        Vector3 neighborPos = new Vector3(x, 0, y + lineLength);
-                        Debug.DrawLine(cellPos, neighborPos, Color.cyan);
-                    }
-                    if (currentCell.directions[2])
-                    {
-                        // negative y
-                        Vector3 neighborPos = new Vector3(x, 0, y - lineLength);
-                        Debug.DrawLine(cellPos, neighborPos, Color.cyan);
-                    }
-                    if (currentCell.directions[3])
-                    {
-                        // negative x
-                        Vector3 neighborPos = new Vector3(x - lineLength, 0, y);
-                        Debug.DrawLine(cellPos, neighborPos, Color.cyan);
+                        Vector3 cellPos = new Vector3(x, 0, y);
+                        float lineLength = 1f;
+                        if (currentCell.directions[0])
+                        {
+                            // positive x
+                            Vector3 neighborPos = new Vector3(x + lineLength, 0, y);
+                            Debug.DrawLine(cellPos, neighborPos, Color.cyan);
+                        }
+                        if (currentCell.directions[1])
+                        {
+                            // positive y
+                            Vector3 neighborPos = new Vector3(x, 0, y + lineLength);
+                            Debug.DrawLine(cellPos, neighborPos, Color.cyan);
+                        }
+                        if (currentCell.directions[2])
+                        {
+                            // negative y
+                            Vector3 neighborPos = new Vector3(x, 0, y - lineLength);
+                            Debug.DrawLine(cellPos, neighborPos, Color.cyan);
+                        }
+                        if (currentCell.directions[3])
+                        {
+                            // negative x
+                            Vector3 neighborPos = new Vector3(x - lineLength, 0, y);
+                            Debug.DrawLine(cellPos, neighborPos, Color.cyan);
+                        }
                     }
                 }
             }
@@ -119,23 +135,47 @@ public class MazeMaker : MonoBehaviour
                         Vector3 wallPos = new Vector3(x, 0, y + lineLength / 2);
                         GameObject wall = Instantiate(wallPrefab, wallPos, Quaternion.Euler(0f, 90f, 0f)) as GameObject;
                     }
-                    //if (currentCell.directions[2])
-                    //{
-                    //    // negative y
-                    //    Vector3 neighborPos = new Vector3(x, 0, y - lineLength);
-                    //    Debug.DrawLine(cellPos, neighborPos, Color.cyan);
-                    //}
-                    //if (currentCell.directions[3])
-                    //{
-                    //    // negative x
-                    //    Vector3 neighborPos = new Vector3(x - lineLength, 0, y);
-                    //    Debug.DrawLine(cellPos, neighborPos, Color.cyan);
-                    //}
+                    if (y == 0 && !currentCell.directions[2])
+                    {
+                        // negative y
+                        Vector3 wallPos = new Vector3(x, 0, y - lineLength / 2);
+                        GameObject wall = Instantiate(wallPrefab, wallPos, Quaternion.Euler(0f, 90f, 0f)) as GameObject;
+                    }
+                    if (x == 0 && !currentCell.directions[3])
+                    {
+                        // negative x
+                        Vector3 wallPos = new Vector3(x - lineLength / 2, 0, y);
+                        GameObject wall = Instantiate(wallPrefab, wallPos, Quaternion.identity) as GameObject;
+                    }
                 }
             }
         }
     }
 
+    void MakeDoorway(Location location)
+    {
+        Connections cell = levelOne.cells[location.x, location.y];
+        // which connection to set to true?
+        // directions are listed in this order: +x, +y, -y, -x
+        if (location.x == 0)
+        {
+            cell.directions[3] = true;
+        }
+        else if (location.x == mazeWidth - 1)
+        {
+            cell.directions[0] = true;
+        }
+        else if (location.y == 0)
+        {
+            cell.directions[2] = true;
+        }
+        else if (location.y == mazeHeight - 1)
+        {
+            cell.directions[1] = true;
+        }
+    }
+
+    // From Millington pg. 706. He calls this function just "maze"
     void generateMaze(Level level, Location start)
     {
         // a stack of locations we can branch from
