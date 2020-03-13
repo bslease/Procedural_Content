@@ -7,6 +7,7 @@ public class MazeMaker : MonoBehaviour
     public int mazeWidth;
     public int mazeHeight;
     public Location mazeStart = new Location(0,0);
+    bool hasExit = false;
 
     //GridLevel levelOne;
     GridLevelWithRooms levelOne;
@@ -63,14 +64,17 @@ public class MazeMaker : MonoBehaviour
             mazeWidth = (int)Random.Range(10f, 20f);
             mazeHeight = (int)Random.Range(10f, 20f);
             mazeStart = new Location((int)Random.Range(0f, mazeWidth - 1), 0);
-            int exitX = mazeWidth - 1 - mazeStart.x;
-            int exitY = mazeHeight - 1 - mazeStart.y;
-            Location exit = new Location(exitX, exitY);
             //levelOne = new GridLevel(mazeWidth, mazeHeight);
             levelOne = new GridLevelWithRooms(mazeWidth, mazeHeight);
             generateMaze(levelOne, mazeStart);
             MakeDoorway(mazeStart);
-            MakeDoorway(exit);
+            if (hasExit)
+            {
+                int exitX = mazeWidth - 1 - mazeStart.x;
+                int exitY = mazeHeight - 1 - mazeStart.y;
+                Location exit = new Location(exitX, exitY);
+                MakeDoorway(exit);
+            }
             BuildMaze();
         }
 
@@ -149,10 +153,10 @@ public class MazeMaker : MonoBehaviour
                         Vector3 wallPos = new Vector3(x - lineLength / 2, 0, y);
                         GameObject wall = Instantiate(wallPrefab, wallPos, Quaternion.identity) as GameObject;
                     }
-                    if (!currentCell.directions[0] && !currentCell.directions[1] && !currentCell.directions[2] && !currentCell.directions[3])
-                    {
-                        GameObject blocker = Instantiate(blockerPrefab, new Vector3(x,0,y), Quaternion.identity) as GameObject;
-                    }
+                }
+                if (!currentCell.directions[0] && !currentCell.directions[1] && !currentCell.directions[2] && !currentCell.directions[3])
+                {
+                    GameObject blocker = Instantiate(blockerPrefab, new Vector3(x, 0, y), Quaternion.identity) as GameObject;
                 }
             }
         }

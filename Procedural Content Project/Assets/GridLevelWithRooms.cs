@@ -7,18 +7,18 @@ public class GridLevelWithRooms : GridLevel
     Stack<Room> unplacedRooms;
     float CHANCE_OF_ROOM = 0.9f;
     int iteration = 0;
-    bool includeUnreachables = true;
+    bool includeUnreachables = false;
 
     public GridLevelWithRooms(int width, int height) : base(width, height)
     {
         // populate the rooms stack
         unplacedRooms = new Stack<Room>();
-        int numRooms = 7;
+        int numRooms = 20;
         for (int i=0; i < numRooms; i++)
         {
             Room room = new Room();
-            room.width = (int)Random.Range(2f, 4.99f);
-            room.height = (int)Random.Range(2f, 4.99f);
+            room.width = (int)Random.Range(3f, 4.99f);
+            room.height = (int)Random.Range(3f, 4.99f);
             unplacedRooms.Push(room);
         }
 
