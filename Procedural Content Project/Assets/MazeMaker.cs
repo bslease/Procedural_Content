@@ -11,11 +11,13 @@ public class MazeMaker : MonoBehaviour
     //GridLevel levelOne;
     GridLevelWithRooms levelOne;
     GameObject wallPrefab;
+    GameObject blockerPrefab;
 
     // Start is called before the first frame update
     void Start()
     {
         wallPrefab = Resources.Load<GameObject>("Wall");
+        blockerPrefab = Resources.Load<GameObject>("Blocker");
 
         //levelOne = new GridLevel(mazeWidth, mazeHeight);
         //generateMaze(levelOne, mazeStart);
@@ -58,8 +60,8 @@ public class MazeMaker : MonoBehaviour
             }
 
             // generate a new maze
-            mazeWidth = (int)Random.Range(5f, 20f);
-            mazeHeight = (int)Random.Range(5f, 20f);
+            mazeWidth = (int)Random.Range(10f, 20f);
+            mazeHeight = (int)Random.Range(10f, 20f);
             mazeStart = new Location((int)Random.Range(0f, mazeWidth - 1), 0);
             int exitX = mazeWidth - 1 - mazeStart.x;
             int exitY = mazeHeight - 1 - mazeStart.y;
@@ -146,6 +148,10 @@ public class MazeMaker : MonoBehaviour
                         // negative x
                         Vector3 wallPos = new Vector3(x - lineLength / 2, 0, y);
                         GameObject wall = Instantiate(wallPrefab, wallPos, Quaternion.identity) as GameObject;
+                    }
+                    if (!currentCell.directions[0] && !currentCell.directions[1] && !currentCell.directions[2] && !currentCell.directions[3])
+                    {
+                        GameObject blocker = Instantiate(blockerPrefab, new Vector3(x,0,y), Quaternion.identity) as GameObject;
                     }
                 }
             }

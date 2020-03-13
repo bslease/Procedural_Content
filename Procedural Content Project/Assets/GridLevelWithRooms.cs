@@ -5,20 +5,33 @@ using UnityEngine;
 public class GridLevelWithRooms : GridLevel
 {
     Stack<Room> unplacedRooms;
-    float CHANCE_OF_ROOM = 0.75f;
+    float CHANCE_OF_ROOM = 0.9f;
     int iteration = 0;
+    bool includeUnreachables = true;
 
     public GridLevelWithRooms(int width, int height) : base(width, height)
     {
         // populate the rooms stack
         unplacedRooms = new Stack<Room>();
-        int numRooms = 5;
+        int numRooms = 7;
         for (int i=0; i < numRooms; i++)
         {
             Room room = new Room();
-            room.width = 4;
-            room.height = 4;
+            room.width = (int)Random.Range(2f, 4.99f);
+            room.height = (int)Random.Range(2f, 4.99f);
             unplacedRooms.Push(room);
+        }
+
+        if (includeUnreachables)
+        {
+            int numCells = width * height;
+            int numUnreachable = (int)(numCells * 0.05f);
+            for (int i = 0; i< numUnreachable; i++)
+            {
+                int x = (int)Random.Range(0f, width-1);
+                int y = (int)Random.Range(0f, height-1);
+                cells[x, y].inMaze = true;
+            }
         }
     }
 
@@ -64,17 +77,6 @@ public class GridLevelWithRooms : GridLevel
                     cells[x, y].directions[1] = true;
                     cells[x, y + 1].directions[2] = true;
                 }
-                // test
-                //if (x == location.x)
-                //{
-                //    cells[x, y].directions[3] = false;
-                //    cells[x - 1, y].directions[0] = false;
-                //}
-                //if (y == location.y)
-                //{
-                //    cells[x, y].directions[2] = false;
-                //    cells[x, y].directions[1] = false;
-                //}
             }
         }
     }
